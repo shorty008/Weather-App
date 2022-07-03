@@ -12,27 +12,75 @@ var searchHistory = document.querySelector("#searchHistory");
 var searchResults = document.querySelector("#searchResults");
 
 //city search
+var formSumbitHeader = function (event) {
+    event.preventDefault();
 
+    var city = cityInputEl.value.trim();
+
+    if (city) {
+        weatherCity(city);
+    }
+}
 
 //API call
-var weatherCap = function (city) {
-    var capturecityUrl = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=imperial&appid=" + apiKey;
-    fetch(capturecityUrl).then(function(response){
+var weatherCity = function(city) {
+    var captureCityUrl = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=imperial&appid=" + apiKey;
+    fetch(captureCityUrl).then(function(response){
         if(response.ok){
-            city = city.toUpperCase();
             response.json().then(function(data){
-                var lat = data.coord.lat;
-                var long = data.coord.lon;
-                var captureUrl = "https://api.openweathermap.org/data/2.5/onecall?lat=" + lat + "&lon=" + long + "&units=imperial&appid=" + apiKey;
-                fetch(captureUrl).then(function(response){
-                    response.json().then(function(data){
-                        displayWeather(data,city);
-                    })
-                })
-            });
-        }
+                weatherResults(data, city);
+        });
+    }
         else {
             alert("The city entered was not found");
         }
     });
 };
+
+
+var clearData = function(){
+    ulElement.textContent="";
+    futureContainer.textContent="";
+
+};
+
+//Display today's weather
+var weatherResults = function (weather, citySearch){
+    console.log (weather);
+    
+    //clear previous weather values
+    currentWeather.textContent = "";
+
+    todaysResults.classList = "border";
+
+    //Set city for forecast
+    todayCityForecast.textContent = citySearch;
+
+    //Set current date for forecast
+    var currentDate = document.createElement("span");
+    currentDate.textContent = moment(weather.current.dt.value).format(": MMM D, YYYY");
+    todayCityForecast.appendChild(currentDate);
+
+    //Display current weather icon
+    var icon = document.createElement("img");
+    var iconCode = weather.current.weather[0].icon
+    icon.setAttribute("src","https://openweathermap.org/img/wn/" + iconCode + "@2x.png");
+    todayCityForecast.appendChild(icon);
+
+    //Get and display temp
+    var temp = document.createElement("span");
+    temp.textContent = "Today's Temperature: " + weather.current.temp + " F";
+    currentWeather.appendChild(temp);
+
+    //Get and display wind conditions
+    var wind = document.createElement("span");
+    wind.textContent = "Today's Wind Direction and Speed: " + weather.current.wind_deg + " degrees " + weather.current.wind_speed + " MPH";
+    currentWeather.appendChild(wind);
+
+    //Get and display Humidity
+    var humidity = document.createElement("span");
+    humidity.textContent = "Today's Humidity is: " + weather.current.humidity;
+    currentWeather.appendChild(humidity);
+
+    
+}
